@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
-import { exportToCSV } from "./utils/saveCSV.js";
+import { exportToCSV } from "./utils/save-csv.js";
+import { DataCleaner } from "./utils/data-cleaner.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -151,13 +152,14 @@ async function processProducts(page) {
   });
 
   // Remove duplicate products
-  const uniqueProducts = products.filter(
-    (product, index, self) =>
-      index ===
-      self.findIndex((p) => JSON.stringify(p) === JSON.stringify(product))
-  );
+  let cleanedProducts = DataCleaner.removeDuplicates(products);
+  cleanedProducts = DataCleaner.cleanTextFields(cleanedProducts, [
+    "title",
+    "sold",
+    "store",
+  ]);
 
-  return uniqueProducts;
+  return cleanedProducts;
 }
 
 async function goToNextPage(page) {
